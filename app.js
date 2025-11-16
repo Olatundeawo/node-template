@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable global-require */
 /* eslint-disable import/no-dynamic-require */
 if (!process.env.__ALREADY_BOOTSTRAPPED_ENVS) require('dotenv').config();
@@ -24,6 +25,9 @@ const server = createServer({
 const ENDPOINT_CONFIGS = [
   {
     path: './endpoints/onboarding/',
+  },
+  {
+    path: './endpoints/payment-instructions/',
   },
 ];
 

@@ -1,40 +1,51 @@
-/* eslint-disable prettier/prettier */
+/* eslint-disable import/newline-after-import */
+/* app.js */
+const express = require('express');
+const bodyParser = require('body-parser');
 const { parseInstruction } = require('../../utils/parser');
+const app = express();
 
-module.exports = {
-  method: 'post',
-  path: '/payment-instructions',
-  middlewares: [],
-  handler: async (req) => {
-    const { accounts, instruction } = req.body;
+// Middleware
+app.use(bodyParser.json({ limit: '50mb' }));
 
-    if (!accounts || !instruction) {
-      return {
-        status: 400,
-        statusText: 'failed',
-        message: 'Missing accounts or instruction',
-        data: {
-          type: null,
-          amount: null,
-          currency: null,
-          debit_account: null,
-          credit_account: null,
-          execute_by: null,
-          status: 'failed',
-          status_reason: 'Missing accounts or instruction',
-          status_code: 'SY03',
-          accounts: [],
-        },
-      };
-    }
+// Example route
+app.post('/payment-instructions', (req, res) => {
+  const { accounts, instruction } = req.body;
 
-    const result = parseInstruction(instruction, accounts);
+  if (!accounts || !instruction) {
+    return res.status(400).json({
+      type: null,
+      amount: null,
+      currency: null,
+      debit_account: null,
+      credit_account: null,
+      execute_by: null,
+      status: 'failed',
+      status_reason: 'Missing accounts or instruction',
+      status_code: 'SY03',
+      accounts: [],
+    });
+  }
 
-    return {
-      status: result.status === 'failed' ? 400 : 200,
-      statusText: result.status,
-      message: result.status_reason,
-      data: result,
-    };
-  },
-};
+  const result = parseInstruction(instruction, accounts);
+  const statusCode = result.status === 'failed' ? 400 : 200;
+  return res.status(statusCode).json(result);
+});
+
+// Health check route
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+// Set host and port for Render
+const PORT = process.env.PORT || 10000;
+const HOST = '0.0.0.0';
+
+// Start server
+const server = app.listen(PORT, HOST, () => {
+  console.log(`Server running on http://${HOST}:${PORT}`);
+});
+
+// Fix timeout issues on Render
+server.keepAliveTimeout = 120000; // 120 seconds
+server.headersTimeout = 120000;
+
+module.exports = app;

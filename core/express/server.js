@@ -222,7 +222,9 @@ function Server(serverConfig = {}) {
         }
 
         responseComponents.statusCode = result.status || 200;
-        responseComponents.body.status = 'success';
+        // responseComponents.body.status = 'success'; success was hardcoded, it always bring success even for a failed transaction
+        responseComponents.body.status =
+          result.statusText || (responseComponents.statusCode >= 400 ? 'failed' : 'success');
         responseComponents.body.message = result.message;
         responseComponents.body.data = result.data || {};
 
